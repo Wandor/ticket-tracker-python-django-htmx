@@ -1,0 +1,66 @@
+{# Re-fetches itself, keeping the current filter and page, whenever tickets change. #}
+<div id="ticket-list"
+     hx-get="{% url 'tickets:ui-list' %}?{{ current_query }}"
+     hx-trigger="tickets-changed from:body"
+     hx-swap="outerHTML">
+  <div class="toolbar">
+    <h2>Tickets</h2>
+    <nav class="filters" aria-label="Filter by status">
+      <a class="filter" href="/" hx-get="{% url 'tickets:ui-list' %}" hx-target="#ticket-list"
+         hx-swap="outerHTML" hx-push-url="/" {% if not current_status %}aria-current="page"{% endif %}>All</a>
+      {% for value, label in statuses %}
+        <a class="filter" href="/?status={{ value }}" hx-get="{% url 'tickets:ui-list' %}?status={{ value }}"
+           hx-target="#ticket-list" hx-swap="outerHTML" hx-push-url="/?status={{ value }}"
+           {% if current_status == value %}aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+
+  {% if page.object_list %}
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Priority</th><th>Status</th><th>Created (UTC)</th></tr>
+      </thead>
+      <tbody>
+        {% for ticket in page.object_list %}
+          <tr>
+            <td class="title">
+              {{ ticket.title }}
+              {% if ticket.description %}<small>{{ ticket.description }}</small>{% endif %}
+            </td>
+            <td><span class="badge priority-{{ ticket.priority }}">{{ ticket.priority }}</span></td>
+            <td>
+              <select name="status" class="status-{{ ticket.status }}" aria-label="Status of {{ ticket.title }}"
+                      hx-post="{% url 'tickets:ui-status' ticket.id %}" hx-trigger="change" hx-swap="none">
+                {% for value, label in statuses %}
+                  <option value="{{ value }}" {% if ticket.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td class="nowrap">{{ ticket.created_at|date:"j M Y, H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty">No tickets here yet.</p>
+  {% endif %}
+
+  {% if page.paginator.num_pages > 1 %}
+    <nav class="pager" aria-label="Pagination">
+      {% if previous_query %}
+        <a class="pager-link" href="/?{{ previous_query }}" hx-get="{% url 'tickets:ui-list' %}?{{ previous_query }}"
+           hx-target="#ticket-list" hx-swap="outerHTML" hx-push-url="/?{{ previous_query }}">Previous</a>
+      {% else %}
+        <span class="pager-link disabled">Previous</span>
+      {% endif %}
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }} ({{ page.paginator.count }} tickets)</span>
+      {% if next_query %}
+        <a class="pager-link" href="/?{{ next_query }}" hx-get="{% url 'tickets:ui-list' %}?{{ next_query }}"
+           hx-target="#ticket-list" hx-swap="outerHTML" hx-push-url="/?{{ next_query }}">Next</a>
+      {% else %}
+        <span class="pager-link disabled">Next</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+</div>

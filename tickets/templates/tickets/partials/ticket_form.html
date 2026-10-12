@@ -1,0 +1,23 @@
+<form class="create" hx-post="{% url 'tickets:ui-create' %}" hx-swap="outerHTML" novalidate>
+  <label>
+    Title
+    <input name="title" value="{{ form.title.value|default_if_none:'' }}" maxlength="200" required
+           {% if form.title.errors %}aria-invalid="true"{% endif %}>
+    {% if form.title.errors %}<span class="field-error">Title {{ form.title.errors.0 }}</span>{% endif %}
+  </label>
+  <label>
+    Priority
+    <select name="priority">
+      {% for value, label in form.fields.priority.choices %}
+        <option value="{{ value }}" {% if value == form.priority.value|default:"medium" %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="full">
+    Description (optional)
+    <textarea name="description">{{ form.description.value|default_if_none:'' }}</textarea>
+  </label>
+  <div class="full">
+    <button type="submit">Create ticket</button>
+  </div>
+</form>

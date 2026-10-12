@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticket Tracker</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'tickets/styles.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
+          integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+          crossorigin="anonymous"></script>
+</head>
+{# The CSRF header rides along on every HTMX request made inside <body>. #}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <main class="page">
+    <header class="page-header">
+      <h1>Ticket Tracker</h1>
+      <div id="stats" hx-get="{% url 'tickets:ui-stats' %}" hx-trigger="tickets-changed from:body">
+        {% include "tickets/partials/stats.html" %}
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>New ticket</h2>
+      {% include "tickets/partials/ticket_form.html" %}
+    </section>
+
+    <section class="card">
+      {% include "tickets/partials/ticket_list.html" %}
+    </section>
+  </main>
+</body>
+</html>
